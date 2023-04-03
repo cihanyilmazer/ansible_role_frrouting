@@ -1,0 +1,8 @@
+router ospf
+ ospf router-id {{ frr_ospf_router_id }}
+ network {{ frr_loopback_address }}/32 area 0
+ {% for n in frr_ospf_networks %}
+ network {{ n }} area 0
+ {% endfor %} 
+exit
+!

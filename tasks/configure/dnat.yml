@@ -1,0 +1,12 @@
+---
+- name: create dnat rules
+  iptables:
+    table: nat
+    chain: PREROUTING
+    #in_interface: '{{ frr_dnat_inbound_interface }}'
+    destination: '{{ item['original_destination'] }}'
+    to_destination: '{{ item['translated_destination'] }}'
+    #jump: NETMAP - only for subnet-to-subnet NAT
+    jump: DNAT # this is for 1-1 NAT
+  loop:
+    - "{{ frr_dnat_mappings }}"

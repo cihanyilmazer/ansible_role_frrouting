@@ -1,0 +1,61 @@
+---
+- name: Set default all routed traffic policy
+  ufw:
+    direction: routed
+    policy: "{{ frr_ufw_default_route_policy }}"
+    comment: "{{ frr_ufw_default_route_policy }} all routed traffic by default"
+
+- name: Deny all routed traffic from untrusted interfaces
+  ufw:
+    rule: deny
+    route: true
+    interface_in: "{{ item }}"
+    src: 0.0.0.0/0
+    dest: 0.0.0.0/0
+    comment: deny all routed traffic from untrusted interface
+    insert: 0
+    insert_relative_to: first-ipv4
+  with_items: "{{ frr_untrusted_interfaces }}"
+  when:
+    - frr_ufw_deny_routed_traffic_from_untrusted_interfaces
+    - frr_untrusted_interfaces|length > 0
+
+- name: Allow OSPF neighborship
+  ufw:
+    rule: allow
+    direction: in
+    src: "{{ item }}"
+    to: 224.0.0.5
+    comment: allow ospf neighborship
+  with_items: "{{ frr_ospf_networks }}"
+  when:
+    - frr_enable_ospf == "yes"
+    - frr_ospf_networks|length > 0
+
+- name: Allow iBGP peering
+  ufw:
+    rule: allow
+    proto: tcp
+    to_port: 179
+    direction: in
+    src: "{{ item }}"
+    to: "{{ frr_loopback_address }}"
+    comment: allow ibgp peering
+  with_items: "{{ frr_ibgp_neighbors }}"
+  when: 
+    - frr_enable_bgp == "yes"
+    - frr_ibgp_neighbors|length > 0
+
+- name: Allow eBGP peering
+  ufw:
+    rule: allow
+    proto: tcp
+    to_port: 179
+    direction: in
+    src: "{{ item['peer_ip_address'] }}"
+    to: "{{ item['local_ip_address'] }}"
+    comment: allow ebgp peering
+  with_items: "{{ frr_ebgp_neighbors }}"
+  when:
+    - frr_enable_bgp == "yes"
+    - frr_ebgp_neighbors|length > 0

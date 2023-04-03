@@ -1,0 +1,19 @@
+---
+- name: Override daemons at /etc/frr/
+  template:
+    src: daemons.j2
+    dest: /etc/frr/daemons
+    owner: frr
+    group: frr
+    mode: '640'
+    lstrip_blocks: yes
+  notify: restart frr
+
+- name: Copy frr.conf to /etc/frr/
+  template:
+    src: frr.j2
+    dest: /etc/frr/frr.conf
+    owner: frr
+    group: frr
+    mode: '640'
+  notify: restart frr

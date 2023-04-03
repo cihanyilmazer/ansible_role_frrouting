@@ -1,0 +1,69 @@
+router bgp {{ frr_bgp_local_asn }}
+  bgp router-id {{ frr_bgp_router_id }}
+
+  {% if frr_ibgp_neighbors|length > 0 %}
+  {% for n in frr_ibgp_neighbors %}
+  neighbor {{ n }} remote-as {{ frr_bgp_local_asn }}
+  neighbor {{ n }} update-source lo
+  neighbor {{ n }} next-hop-self
+  {% endfor %}
+  {% endif %}
+
+  {% if frr_bgp_networks|length > 0 %}
+  {% for n in frr_bgp_networks %}
+  network {{ n }}
+  {% endfor %}
+  {% endif %}
+
+  {% if frr_ebgp_neighbors|length > 0 %}
+  {% for n in frr_ebgp_neighbors %}
+  neighbor {{ n['peer_ip_address'] }} remote-as {{ n['peer_asn'] }} 
+  {% endfor %}
+
+  address-family ipv4 unicast
+  {% for n in frr_ebgp_neighbors %}
+  {% if n['as_override'] is defined and n['as_override'] %}
+  neighbor {{ n['peer_ip_address'] }} as-override
+  neighbor {{ n['peer_ip_address'] }} route-map {{ n["route_map_in"] }} in
+  neighbor {{ n['peer_ip_address'] }} route-map {{ n["route_map_out"] }} out
+  {% endif %}
+  {% endfor %}
+
+  {% if (frr_redistribute_connected is defined) and (frr_redistribute_connected|length > 0) %}
+  redistribute connected route-map RMP-BGP-REDIST-CONN
+  {% endif %}
+  exit-address-family
+
+{% endif %}
+exit
+!
+{% if frr_bgp_prefix_list|length > 0 %}
+{% for p in frr_bgp_prefix_list %}
+{% for i in p["ip_list"] %}
+ip prefix-list {{ p["name"] }} seq {{ loop.index }} permit {{ i }}
+{% endfor %}
+{% endfor %}
+{% endif %}
+!
+{% if frr_bgp_route_maps|length > 0 %}
+{% for r in frr_bgp_route_maps %}
+{% for m in r["matches"] %}
+
+route-map {{ r["name"] }} permit {{ loop.index }}
+match ip address prefix-list {{ m["prefix_list"] }}
+set metric {{ m["metric"] }}
+
+{% endfor %}
+{% endfor %}
+
+
+{% endif %}
+!
+{% if (frr_redistribute_connected is defined) and (frr_redistribute_connected|length > 0) %}
+{% for i in  frr_redistribute_connected %}
+route-map RMP-BGP-REDIST-CONN permit {{ loop.index }}
+ match interface {{ i }}
+exit
+{% endfor %}
+{% endif %}
+!

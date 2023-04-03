@@ -1,0 +1,6 @@
+---
+- name: Update cache and install FRR
+  apt:
+    name: frr
+    state: latest
+    update_cache: yes

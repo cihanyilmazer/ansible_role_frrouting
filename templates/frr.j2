@@ -1,0 +1,15 @@
+{% include 'base.j2' %}
+
+{% if frr_static_routes|length >0 %}
+{% include 'static_routes.j2' %}
+{% endif %}
+
+{% include 'interfaces.j2' %}
+
+{% if frr_enable_bgp == 'yes' %}
+{% include 'bgp.j2' %}
+{% endif %}
+
+{% if frr_enable_ospf == 'yes' %}
+{% include 'ospf.j2' %}
+{% endif %}
