@@ -1,7 +1,16 @@
 ---
 - import_tasks: install.yml
-  tags: setup
+  tags:
+    - frr
+    - frr-install
+    - never
 - import_tasks: configure/ufw.yml
-  tags: setup
+  tags:
+    - frr
+    - frr-configure-ufw
+    - never
 - import_tasks: configure/base.yml
-  tags: operational
+  tags:
+    - frr
+    - frr-configure-base
+    - never

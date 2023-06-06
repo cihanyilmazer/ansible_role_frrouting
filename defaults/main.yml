@@ -35,5 +35,3 @@ frr_ufw_deny_routed_traffic_from_untrusted_interfaces: true
 frr_untrusted_interfaces:
   - "{{ ansible_default_ipv4['interface'] }}"
 
-# DNAT
-# frr_dnat_mappings: []
